@@ -29,8 +29,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, userName, on
 
   return (
     <>
-      {/* Desktop Sidebar */}
-      <div className="hidden md:flex w-72 h-screen bg-zinc-950 border-r border-zinc-800 flex-col fixed left-0 top-0 z-20 shadow-[10px_0_30px_rgba(0,0,0,0.5)]">
+      {/* Desktop Sidebar (1024px and above) */}
+      <div className="hidden lg:flex w-72 h-screen bg-zinc-950 border-r border-zinc-800 flex-col fixed left-0 top-0 z-20 shadow-[10px_0_30px_rgba(0,0,0,0.5)]">
         <div className="p-8 flex items-center gap-3">
           <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-600/20 rotate-3 hover:rotate-0 transition-transform duration-500">
             <Zap size={24} fill="currentColor" />
@@ -80,20 +80,20 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, userName, on
         </div>
       </div>
 
-      {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-zinc-950/90 backdrop-blur-xl border-t border-zinc-800 flex items-center justify-around px-4 py-4 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] rounded-t-[2rem]">
+      {/* Mobile & Tablet Bottom Navigation (Below 1024px) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-zinc-950/90 backdrop-blur-xl border-t border-zinc-800 flex items-center justify-around px-6 py-4 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] rounded-t-[2.5rem]">
         {menuItems.map((item) => (
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
-            className={`flex flex-col items-center gap-1.5 transition-all duration-500 relative ${
-              activeTab === item.id ? 'text-blue-500 scale-110' : 'text-zinc-500'
+            className={`flex flex-col items-center gap-1.5 transition-all duration-500 relative px-4 py-2 rounded-2xl ${
+              activeTab === item.id ? 'text-blue-500 scale-110' : 'text-zinc-500 active:scale-95'
             }`}
           >
-            <item.icon size={22} />
+            <item.icon size={24} />
             <span className="text-[10px] font-black uppercase tracking-tighter">{item.label}</span>
             {activeTab === item.id && (
-              <div className="absolute -top-2 w-1 h-1 bg-blue-500 rounded-full" />
+              <div className="absolute -top-1 w-1 h-1 bg-blue-500 rounded-full" />
             )}
           </button>
         ))}

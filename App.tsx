@@ -73,7 +73,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col md:flex-row overflow-hidden">
+    <div className="min-h-screen bg-black text-white flex flex-col lg:flex-row overflow-hidden">
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
@@ -81,10 +81,10 @@ const App: React.FC = () => {
         onLogout={handleLogout}
       />
       
-      <main className="flex-1 md:ml-64 p-6 lg:p-12 relative overflow-y-auto h-screen custom-scrollbar">
+      <main className="flex-1 lg:ml-72 p-6 lg:p-12 relative overflow-y-auto h-screen custom-scrollbar">
         <div className="max-w-6xl mx-auto">
           {/* Top Header Controls - Desktop Only */}
-          <div className="hidden md:flex justify-end items-center gap-4 mb-10 animate-in fade-in slide-in-from-top-4 duration-1000">
+          <div className="hidden lg:flex justify-end items-center gap-4 mb-10 animate-in fade-in slide-in-from-top-4 duration-1000">
             <div className="relative group">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-blue-500 transition-colors" size={16} />
               <input 
@@ -102,7 +102,7 @@ const App: React.FC = () => {
           {/* Dynamic Content with Key-based Transition */}
           <div 
             key={activeTab} 
-            className="mb-16 md:mb-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-500 fill-mode-both"
+            className="mb-24 lg:mb-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-500 fill-mode-both"
           >
             {renderContent()}
           </div>
