@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { Search, Loader2, BarChart3, Copy, DollarSign, Activity, ExternalLink, Trash2, Zap } from 'lucide-react';
+import { Search, Loader2, BarChart3, Copy, DollarSign, Activity, ExternalLink, Trash2, Zap, AlertTriangle } from 'lucide-react';
 import { getKeywordIdeas } from '../services/geminiService';
 import { KeywordData } from '../types';
 import { storageService } from '../services/storageService';
@@ -9,6 +8,7 @@ const KeywordResearch: React.FC = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<KeywordData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [showEmbed, setShowEmbed] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -22,12 +22,18 @@ const KeywordResearch: React.FC = () => {
     if (!query.trim()) return;
 
     setLoading(true);
+    setError(null);
     try {
       const data = await getKeywordIdeas(query);
-      setResults(data);
-      storageService.saveKeywords(data);
-    } catch (err) {
-      console.error(err);
+      if (data && data.length > 0) {
+        setResults(data);
+        storageService.saveKeywords(data);
+      } else {
+        setError("No keywords returned. Please check your topic or API configuration.");
+      }
+    } catch (err: any) {
+      console.error("Search error:", err);
+      setError("Analysis failed. This is usually due to a missing or invalid API Key in the deployment settings.");
     } finally {
       setLoading(false);
     }
@@ -43,6 +49,7 @@ const KeywordResearch: React.FC = () => {
   const clearResults = () => {
     setResults([]);
     storageService.saveKeywords([]);
+    setError(null);
   };
 
   const getDifficultyColor = (diff: number) => {
@@ -86,11 +93,18 @@ const KeywordResearch: React.FC = () => {
         <button
           type="submit"
           disabled={loading}
-          className="absolute right-3 top-3 bottom-3 px-8 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-[1.2rem] font-black transition-all shadow-xl shadow-blue-600/20 flex items-center gap-3 active:scale-95"
+          className="absolute right-3 top-3 bottom-3 px-8 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-[1.2rem] font-black transition-all shadow-xl shadow-blue-600/20 flex items-center justify-center gap-3 active:scale-95 min-w-[140px]"
         >
           {loading ? <Loader2 className="animate-spin" size={20} /> : <><Zap size={18} fill="currentColor" /> Research</>}
         </button>
       </form>
+
+      {error && (
+        <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center gap-3 text-rose-400 text-sm font-bold animate-in fade-in slide-in-from-top-2 duration-300">
+          <AlertTriangle size={18} />
+          {error}
+        </div>
+      )}
 
       {results.length > 0 && (
         <div className="space-y-6 animate-in fade-in duration-1000">
@@ -168,7 +182,7 @@ const KeywordResearch: React.FC = () => {
         </div>
       )}
 
-      {!results.length && !loading && (
+      {!results.length && !loading && !error && (
         <div className="flex flex-col items-center justify-center py-32 text-center bg-zinc-900/20 border-2 border-dashed border-zinc-800 rounded-[3rem] animate-in zoom-in-95 duration-1000">
           <div className="w-24 h-24 bg-zinc-900 rounded-[2rem] flex items-center justify-center mb-8 border border-zinc-800 shadow-2xl rotate-12">
             <BarChart3 className="text-zinc-600" size={48} />

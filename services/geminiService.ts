@@ -1,10 +1,17 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { KeywordData, ContentAudit, RankingData } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+// Helper to get a fresh AI instance with the latest environment variables
+const getAI = () => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    console.error("Gemini API Key is missing. Please set the API_KEY environment variable.");
+  }
+  return new GoogleGenAI({ apiKey: apiKey || '' });
+};
 
 export const getKeywordIdeas = async (seed: string): Promise<KeywordData[]> => {
+  const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: `Generate 8 high-potential SEO keywords related to "${seed}". For each keyword, provide: search volume (monthly estimate), keyword difficulty (0-100), search intent (Informational, Transactional, Commercial, Navigational), and estimated CPC in USD.`,
@@ -36,6 +43,7 @@ export const getKeywordIdeas = async (seed: string): Promise<KeywordData[]> => {
 };
 
 export const analyzeContent = async (text: string): Promise<ContentAudit> => {
+  const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: `Perform a deep SEO content audit on the following text: "${text.substring(0, 3000)}". Provide an overall SEO score (0-100), extract the title and meta description (if identifiable or suggest one), list heading tags structure, keyword density for the top 3 keywords, and at least 5 actionable SEO recommendations.`,
@@ -74,6 +82,7 @@ export const analyzeContent = async (text: string): Promise<ContentAudit> => {
 };
 
 export const checkSerpPosition = async (url: string, keyword: string): Promise<Omit<RankingData, 'id' | 'lastChecked'>> => {
+  const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: `Simulate a search engine results page analysis for the domain "${url}" and keyword "${keyword}". 
