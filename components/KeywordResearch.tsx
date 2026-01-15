@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Loader2, BarChart3, Copy, DollarSign, Activity, Trash2, Zap, AlertTriangle, Info } from 'lucide-react';
 import { getGoogleSuggestions } from '../services/keywordService';
-import { getKeywordIdeas } from '../services/geminiService';
 import { KeywordData } from '../types';
 import { storageService } from '../services/storageService';
 
@@ -25,26 +24,8 @@ const KeywordResearch: React.FC = () => {
     setError(null);
     try {
       // Primary engine: Real Google Autocomplete (Works without AI key)
-      let data = await getGoogleSuggestions(query);
+      const data = await getGoogleSuggestions(query);
       
-      // Optional: Enrich with Gemini AI if a key is available in environment
-      try {
-        const aiData = await getKeywordIdeas(query);
-        if (aiData && aiData.length > 0) {
-          // Merge datasets, prioritizing unique keywords
-          const merged = [...aiData];
-          data.forEach(item => {
-            if (!merged.find(m => m.keyword.toLowerCase() === item.keyword.toLowerCase())) {
-              merged.push(item);
-            }
-          });
-          data = merged.slice(0, 15);
-        }
-      } catch (aiErr: any) {
-        console.log("AI Enrichment unavailable:", aiErr.message);
-        // We don't show an error to the user because the basic engine already worked!
-      }
-
       setResults(data);
       storageService.saveKeywords(data);
     } catch (err: any) {

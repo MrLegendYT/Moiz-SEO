@@ -6,12 +6,14 @@ import KeywordResearch from './components/KeywordResearch';
 import ContentAnalyzer from './components/ContentAnalyzer';
 import Settings from './components/Settings';
 import Rankings from './components/Rankings';
+import Auth from './components/Auth';
 import { Bell, Search as SearchIcon } from 'lucide-react';
 import { storageService } from './services/storageService';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<NavItem>('dashboard');
   const [settings, setSettings] = useState(storageService.getSettings());
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -20,6 +22,17 @@ const App: React.FC = () => {
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
+
+  const handleLogin = (userData: { name: string; email: string }) => {
+    const newSettings = { ...settings, userName: userData.name };
+    storageService.saveSettings(newSettings);
+    setSettings(newSettings);
+    setIsAuthenticated(true);
+  };
+
+  if (!isAuthenticated) {
+    return <Auth onLogin={handleLogin} />;
+  }
 
   const renderContent = () => {
     switch (activeTab) {
