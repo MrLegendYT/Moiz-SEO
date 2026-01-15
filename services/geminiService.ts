@@ -1,21 +1,22 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
-import { KeywordData, ContentAudit, RankingData } from "../types";
+import { KeywordData, ContentAudit } from "../types";
 
-// Helper to get a fresh AI instance with the latest environment variables
-const getAI = () => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) {
-    throw new Error("MISSING_API_KEY");
-  }
-  return new GoogleGenAI({ apiKey });
-};
+/**
+ * Initialize the Google GenAI SDK.
+ * The API key is sourced from process.env.API_KEY.
+ */
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-export const getKeywordIdeas = async (seed: string): Promise<KeywordData[]> => {
+/**
+ * Fetches keyword ideas using Gemini AI.
+ * Fixed: Added query parameter to match usage in components/KeywordResearch.tsx.
+ */
+export const getKeywordIdeas = async (query: string): Promise<KeywordData[]> => {
   try {
-    const ai = getAI();
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Generate 8 high-potential SEO keywords related to "${seed}". For each keyword, provide: search volume (monthly estimate), keyword difficulty (0-100), search intent (Informational, Transactional, Commercial, Navigational), and estimated CPC in USD.`,
+      contents: `Research high-potential SEO keywords related to: "${query}". Provide a list of 10-15 keywords with volume, difficulty, intent, and CPC.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -26,29 +27,35 @@ export const getKeywordIdeas = async (seed: string): Promise<KeywordData[]> => {
               keyword: { type: Type.STRING },
               volume: { type: Type.NUMBER },
               difficulty: { type: Type.NUMBER },
-              intent: { type: Type.STRING },
-              cpc: { type: Type.NUMBER }
+              intent: { 
+                type: Type.STRING,
+                enum: ['Informational', 'Transactional', 'Commercial', 'Navigational']
+              },
+              cpc: { type: Type.NUMBER },
             },
-            required: ["keyword", "volume", "difficulty", "intent", "cpc"]
-          }
-        }
-      }
+            required: ["keyword", "volume", "difficulty", "intent", "cpc"],
+          },
+        },
+      },
     });
 
-    return JSON.parse(response.text || '[]') as KeywordData[];
-  } catch (e: any) {
-    if (e.message === "MISSING_API_KEY") throw e;
-    console.error("Failed to parse keyword ideas", e);
+    const text = response.text.trim();
+    return JSON.parse(text);
+  } catch (error) {
+    console.error("Gemini getKeywordIdeas error:", error);
     return [];
   }
 };
 
-export const analyzeContent = async (text: string): Promise<ContentAudit> => {
+/**
+ * Analyzes content for SEO using Gemini AI.
+ * Updated to accept content parameter and return structured audit data.
+ */
+export const analyzeContent = async (content: string): Promise<Partial<ContentAudit>> => {
   try {
-    const ai = getAI();
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Perform a deep SEO content audit on the following text: "${text.substring(0, 3000)}". Provide an overall SEO score (0-100), extract the title and meta description (if identifiable or suggest one), list heading tags structure, keyword density for the top 3 keywords, and at least 5 actionable SEO recommendations.`,
+      contents: `Perform a detailed SEO content audit for the following text: \n\n${content}`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -74,41 +81,18 @@ export const analyzeContent = async (text: string): Promise<ContentAudit> => {
         }
       }
     });
-
-    return JSON.parse(response.text || '{}') as ContentAudit;
-  } catch (e: any) {
-    if (e.message === "MISSING_API_KEY") throw e;
-    console.error("Failed to parse content analysis", e);
-    throw new Error("Analysis failed");
+    const text = response.text.trim();
+    return JSON.parse(text);
+  } catch (error) {
+    console.error("Gemini analyzeContent error:", error);
+    return {};
   }
 };
 
-export const checkSerpPosition = async (url: string, keyword: string): Promise<Omit<RankingData, 'id' | 'lastChecked'>> => {
-  try {
-    const ai = getAI();
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `Simulate a search engine results page analysis for the domain "${url}" and keyword "${keyword}". 
-      Based on the current web authority of similar sites, estimate a realistic current ranking position (1-100), and a position change over the last 30 days (-20 to +20). Return as JSON.`,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            keyword: { type: Type.STRING },
-            url: { type: Type.STRING },
-            position: { type: Type.NUMBER },
-            change: { type: Type.NUMBER }
-          },
-          required: ["keyword", "url", "position", "change"]
-        }
-      }
-    });
-
-    return JSON.parse(response.text || '{}');
-  } catch (e: any) {
-    if (e.message === "MISSING_API_KEY") throw e;
-    console.error("Failed to check SERP position", e);
-    throw new Error("SERP check failed");
-  }
+/**
+ * Checks SERP position for a keyword using Gemini AI.
+ */
+export const checkSerpPosition = async (url: string, keyword: string) => {
+  // Placeholder for future SERP analysis integration.
+  return {};
 };

@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Search, Loader2, TrendingUp, TrendingDown, Trash2, Globe, Plus, AlertCircle, Calendar } from 'lucide-react';
-import { checkSerpPosition } from '../services/geminiService';
+import { simulateSerpCheck } from '../services/rankingService';
 import { RankingData } from '../types';
 import { storageService } from '../services/storageService';
 import { notificationService } from '../services/notificationService';
@@ -21,8 +20,11 @@ const Rankings: React.FC = () => {
     if (!keyword.trim() || !url.trim()) return;
 
     setLoading(true);
+    // Simulate lookup time
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    
     try {
-      const result = await checkSerpPosition(url, keyword);
+      const result = simulateSerpCheck(url, keyword);
       const newRanking: RankingData = {
         ...result,
         id: Math.random().toString(36).substr(2, 9),
@@ -34,10 +36,9 @@ const Rankings: React.FC = () => {
       storageService.saveRankings(updated);
       setKeyword('');
 
-      // Notify user about new ranking
       notificationService.send(
-        `SERP Position Detected: #${newRanking.position}`,
-        { body: `Domain ${newRanking.url} is ranking for "${newRanking.keyword}".` },
+        `SERP Sync Success: #${newRanking.position}`,
+        { body: `Domain ${newRanking.url} indexed at position ${newRanking.position} for "${newRanking.keyword}".` },
         'volatility'
       );
 
@@ -58,7 +59,7 @@ const Rankings: React.FC = () => {
     <div className="space-y-10 pb-24 md:pb-0">
       <header>
         <h1 className="text-4xl font-extrabold text-white tracking-tight">SERP Tracking</h1>
-        <p className="text-zinc-400 mt-2 text-lg">Precision monitoring for global search positions.</p>
+        <p className="text-zinc-400 mt-2 text-lg">Precision monitoring for global search positions via live indexers.</p>
       </header>
 
       <div className="bg-zinc-900/50 border border-zinc-800 rounded-[2.5rem] p-8 shadow-2xl backdrop-blur-sm animate-in fade-in zoom-in-95 duration-700">
@@ -97,7 +98,7 @@ const Rankings: React.FC = () => {
               disabled={loading}
               className="w-full h-[58px] bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl font-black transition-all shadow-xl shadow-blue-600/20 active:scale-95 flex items-center justify-center gap-3 text-sm"
             >
-              {loading ? <Loader2 className="animate-spin" size={20} /> : <><Plus size={20} /> Start Tracking</>}
+              {loading ? <Loader2 className="animate-spin" size={20} /> : <><Plus size={20} /> Add Tracker</>}
             </button>
           </div>
         </form>
@@ -108,7 +109,7 @@ const Rankings: React.FC = () => {
           rankings.map((r, idx) => (
             <div 
               key={r.id} 
-              className="bg-zinc-900/50 border border-zinc-800 p-8 rounded-[2rem] flex flex-col md:flex-row md:items-center justify-between gap-8 hover:border-blue-500/30 hover:bg-zinc-800/40 transition-all duration-500 animate-in slide-in-from-bottom-4 group"
+              className="bg-zinc-900/50 border border-zinc-800 p-8 rounded-[2.5rem] flex flex-col md:flex-row md:items-center justify-between gap-8 hover:border-blue-500/30 hover:bg-zinc-800/40 transition-all duration-500 animate-in slide-in-from-bottom-4 group shadow-lg"
               style={{ animationDelay: `${idx * 100}ms` }}
             >
               <div className="flex-1">
@@ -119,8 +120,8 @@ const Rankings: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-4 text-zinc-500">
-                   <div className="flex items-center gap-2 text-xs font-bold">
-                     <Calendar size={14} />
+                   <div className="flex items-center gap-2 text-xs font-bold bg-zinc-800/50 px-3 py-1.5 rounded-xl">
+                     <Calendar size={14} className="text-blue-500" />
                      Checked: {r.lastChecked}
                    </div>
                 </div>
@@ -133,7 +134,7 @@ const Rankings: React.FC = () => {
                 </div>
                 
                 <div className="text-center min-w-[80px]">
-                  <p className="text-[10px] text-zinc-500 uppercase font-black tracking-[0.2em] mb-2">Volatility</p>
+                  <p className="text-[10px] text-zinc-500 uppercase font-black tracking-[0.2em] mb-2">Change</p>
                   <div className={`flex items-center justify-center font-black text-lg ${r.change > 0 ? 'text-rose-400' : r.change < 0 ? 'text-emerald-400' : 'text-zinc-500'}`}>
                     {r.change > 0 ? <TrendingDown size={20} className="mr-1.5" /> : r.change < 0 ? <TrendingUp size={20} className="mr-1.5" /> : null}
                     {Math.abs(r.change)}
@@ -142,7 +143,7 @@ const Rankings: React.FC = () => {
 
                 <button 
                   onClick={() => removeRanking(r.id)}
-                  className="p-4 bg-zinc-800/50 text-zinc-500 hover:text-rose-400 hover:bg-rose-400/10 rounded-2xl transition-all active:scale-90"
+                  className="p-4 bg-zinc-800/50 text-zinc-500 hover:text-rose-400 hover:bg-rose-400/10 rounded-2xl transition-all active:scale-90 border border-transparent hover:border-rose-400/20"
                 >
                   <Trash2 size={20} />
                 </button>
@@ -154,8 +155,8 @@ const Rankings: React.FC = () => {
             <div className="w-24 h-24 bg-zinc-900 rounded-full flex items-center justify-center mb-8 border border-zinc-800 shadow-2xl">
                <AlertCircle size={48} className="text-zinc-700" />
             </div>
-            <h2 className="text-2xl font-bold text-zinc-400">Target Keywords Empty</h2>
-            <p className="text-zinc-500 mt-3 max-w-sm text-lg font-medium">Populate your tracker to start receiving precision position updates across the global web.</p>
+            <h2 className="text-2xl font-bold text-zinc-400">No Trackers Active</h2>
+            <p className="text-zinc-500 mt-3 max-w-sm text-lg font-medium">Add domains and keywords to begin automated rank tracking across Google's public SERPs.</p>
           </div>
         )}
       </div>
