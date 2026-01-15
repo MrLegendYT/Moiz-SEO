@@ -1,5 +1,5 @@
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { initializeApp, getApp, getApps, FirebaseApp } from "firebase/app";
+import { getAuth, Auth } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
@@ -12,17 +12,23 @@ const firebaseConfig = {
   measurementId: "G-H96DBC3JWZ"
 };
 
-// Initialize Firebase App
-const app = initializeApp(firebaseConfig);
+// Ensure app is initialized exactly once
+let app: FirebaseApp;
+if (!getApps().length) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApp();
+}
 
-// Initialize Auth immediately to ensure it's registered before consumption
-export const auth = getAuth(app);
+// Initialize and export Auth using the specific app instance
+// Pinned to 11.1.0 in index.html to avoid "Component auth not registered" version mismatch errors
+export const auth: Auth = getAuth(app);
 
-// Initialize Analytics conditionally to prevent errors in private modes or ad-block environments
+// Safe analytics initialization
 isSupported().then(supported => {
   if (supported) {
     getAnalytics(app);
   }
 }).catch(err => {
-  console.warn("Firebase Analytics not supported or blocked in this environment:", err);
+  console.warn("Firebase Analytics initialization skipped:", err);
 });

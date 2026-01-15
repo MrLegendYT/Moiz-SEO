@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { NavItem } from '../types';
 import { 
@@ -7,7 +6,6 @@ import {
   FileText, 
   TrendingUp, 
   Settings, 
-  LogOut,
   Zap
 } from 'lucide-react';
 
@@ -15,10 +13,9 @@ interface SidebarProps {
   activeTab: NavItem;
   setActiveTab: (tab: NavItem) => void;
   userName: string;
-  onLogout: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, userName, onLogout }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, userName }) => {
   const menuItems = [
     { id: 'dashboard' as NavItem, label: 'Dashboard', icon: LayoutDashboard },
     { id: 'keywords' as NavItem, label: 'Keywords', icon: Search },
@@ -29,7 +26,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, userName, on
 
   return (
     <>
-      {/* Desktop Sidebar (1024px and above) */}
       <div className="hidden lg:flex w-72 h-screen bg-zinc-950 border-r border-zinc-800 flex-col fixed left-0 top-0 z-20 shadow-[10px_0_30px_rgba(0,0,0,0.5)]">
         <div className="p-8 flex items-center gap-3">
           <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-600/20 rotate-3 hover:rotate-0 transition-transform duration-500">
@@ -61,26 +57,18 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, userName, on
         </nav>
 
         <div className="p-6 border-t border-zinc-900 bg-zinc-950/50">
-          <div className="flex items-center gap-4 px-2 mb-6 group cursor-pointer">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-black text-lg shadow-lg group-hover:scale-105 transition-transform duration-500">
+          <div className="flex items-center gap-4 px-2 mb-2 group cursor-default">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-black text-lg shadow-lg">
               {userName.charAt(0).toUpperCase()}
             </div>
             <div className="flex flex-col overflow-hidden">
               <span className="text-sm font-bold text-zinc-100 truncate">{userName}</span>
-              <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Public Account</span>
+              <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Local Session</span>
             </div>
           </div>
-          <button 
-            onClick={onLogout}
-            className="w-full flex items-center gap-3 px-5 py-3 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/5 rounded-xl transition-all duration-300 font-bold text-sm"
-          >
-            <LogOut size={18} />
-            <span>Sign Out</span>
-          </button>
         </div>
       </div>
 
-      {/* Mobile & Tablet Bottom Navigation (Below 1024px) */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-zinc-950/90 backdrop-blur-xl border-t border-zinc-800 flex items-center justify-around px-6 py-4 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] rounded-t-[2.5rem]">
         {menuItems.map((item) => (
           <button

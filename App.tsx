@@ -1,59 +1,25 @@
-
 import React, { useState, useEffect } from 'react';
-import { User, NavItem } from './types';
+import { NavItem } from './types';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import KeywordResearch from './components/KeywordResearch';
 import ContentAnalyzer from './components/ContentAnalyzer';
 import Settings from './components/Settings';
 import Rankings from './components/Rankings';
-import Auth from './components/Auth';
 import { Bell, Search as SearchIcon } from 'lucide-react';
-import { auth } from './services/firebaseService';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { storageService } from './services/storageService';
 
 const App: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<NavItem>('dashboard');
-  const [isInitializing, setIsInitializing] = useState(true);
+  const [settings, setSettings] = useState(storageService.getSettings());
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        setUser({
-          id: firebaseUser.uid,
-          email: firebaseUser.email || '',
-          name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User'
-        });
-      } else {
-        setUser(null);
-      }
-      setIsInitializing(false);
-    });
-
-    return () => unsubscribe();
+    const handleStorageChange = () => {
+      setSettings(storageService.getSettings());
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      setUser(null);
-    } catch (err) {
-      console.error("Logout failed", err);
-    }
-  };
-
-  if (isInitializing) {
-    return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin shadow-[0_0_20px_rgba(59,130,246,0.5)]"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Auth onAuthSuccess={setUser} />;
-  }
 
   const renderContent = () => {
     switch (activeTab) {
@@ -64,7 +30,7 @@ const App: React.FC = () => {
       case 'audit':
         return <ContentAnalyzer />;
       case 'settings':
-        return <Settings />;
+        return <Settings onSettingsUpdate={setSettings} />;
       case 'rankings':
         return <Rankings />;
       default:
@@ -77,13 +43,11 @@ const App: React.FC = () => {
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
-        userName={user.name}
-        onLogout={handleLogout}
+        userName={settings.userName || 'Local User'}
       />
       
       <main className="flex-1 lg:ml-72 p-6 lg:p-12 relative overflow-y-auto h-screen custom-scrollbar">
         <div className="max-w-6xl mx-auto">
-          {/* Top Header Controls - Desktop Only */}
           <div className="hidden lg:flex justify-end items-center gap-4 mb-10 animate-in fade-in slide-in-from-top-4 duration-1000">
             <div className="relative group">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-blue-500 transition-colors" size={16} />
@@ -99,7 +63,6 @@ const App: React.FC = () => {
             </button>
           </div>
 
-          {/* Dynamic Content with Key-based Transition */}
           <div 
             key={activeTab} 
             className="mb-24 lg:mb-0 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-500 fill-mode-both"

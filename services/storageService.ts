@@ -1,4 +1,3 @@
-
 import { KeywordData, ContentAudit, RankingData, AnalyticsData } from '../types';
 
 const STORAGE_KEYS = {
@@ -26,6 +25,7 @@ const DEFAULT_ANALYTICS: AnalyticsData = {
 };
 
 const DEFAULT_SETTINGS = {
+  userName: 'Moiz',
   email_alerts: true,
   weekly_report: true,
   product_updates: false,
