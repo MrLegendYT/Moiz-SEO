@@ -54,12 +54,16 @@
     "@google/genai": "https://esm.sh/@google/genai@^1.36.0",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
-    "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
-    "firebase/analytics": "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js",
-    "firebase/": "https://esm.sh/firebase@^12.8.0/"
+    "firebase/app": "https://esm.sh/firebase@^10.8.0/app",
+    "firebase/auth": "https://esm.sh/firebase@^10.8.0/auth",
+    "firebase/analytics": "https://esm.sh/firebase@^10.8.0/analytics",
+    "firebase/": "https://esm.sh/firebase@^10.8.0/"
   }
 }
+</script>
+<script>
+  // Polyfill process to prevent ReferenceErrors in browser environments
+  window.process = window.process || { env: {} };
 </script>
 </head>
 <body>
